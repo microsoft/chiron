@@ -14,7 +14,7 @@ if "%errorlevel%" neq "0" (
 echo.
 echo Restoring frontend npm packages
 echo.
-cd frontend
+cd src\frontend
 call npm install
 if "%errorlevel%" neq "0" (
     echo Failed to restore frontend npm packages
@@ -33,7 +33,7 @@ if "%errorlevel%" neq "0" (
 echo.    
 echo Starting backend    
 echo.    
-cd ..  
+cd ..\..  
 start http://127.0.0.1:50505
 call python -m uvicorn app:app  --port 50505 --reload
 if "%errorlevel%" neq "0" (    
