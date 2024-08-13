@@ -3,7 +3,7 @@ import { chatHistorySampleData } from '../constants/chatHistory'
 import { ChatMessage, Conversation, ConversationRequest, CosmosDBHealth, CosmosDBStatus, UserInfo } from './models'
 
 export async function conversationApi(options: ConversationRequest, abortSignal: AbortSignal): Promise<Response> {
-  const response = await fetch('/conversation', {
+  const response = await fetch('/api/conversation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -272,49 +272,54 @@ export const historyRename = async (convId: string, title: string): Promise<Resp
 }
 
 export const historyEnsure = async (): Promise<CosmosDBHealth> => {
-  const response = await fetch('/history/ensure', {
-    method: 'GET'
-  })
-    .then(async res => {
-      const respJson = await res.json()
-      let formattedResponse
-      if (respJson.message) {
-        formattedResponse = CosmosDBStatus.Working
-      } else {
-        if (res.status === 500) {
-          formattedResponse = CosmosDBStatus.NotWorking
-        } else if (res.status === 401) {
-          formattedResponse = CosmosDBStatus.InvalidCredentials
-        } else if (res.status === 422) {
-          formattedResponse = respJson.error
-        } else {
-          formattedResponse = CosmosDBStatus.NotConfigured
-        }
-      }
-      if (!res.ok) {
-        return {
-          cosmosDB: false,
-          status: formattedResponse
-        }
-      } else {
-        return {
-          cosmosDB: true,
-          status: formattedResponse
-        }
-      }
-    })
-    .catch(err => {
-      console.error('There was an issue fetching your data.')
-      return {
-        cosmosDB: false,
-        status: err
-      }
-    })
-  return response
+  return new Promise(resolve => {
+    return {
+      cosmosDB: false,
+      status: "we're not using cosmos so why bother checking with api :D    ."}
+  });
+  // const response = await fetch('/history/ensure', {
+  //   method: 'GET'
+  // })
+  //   .then(async res => {
+  //     const respJson = await res.json()
+  //     let formattedResponse
+  //     if (respJson.message) {
+  //       formattedResponse = CosmosDBStatus.Working
+  //     } else {
+  //       if (res.status === 500) {
+  //         formattedResponse = CosmosDBStatus.NotWorking
+  //       } else if (res.status === 401) {
+  //         formattedResponse = CosmosDBStatus.InvalidCredentials
+  //       } else if (res.status === 422) {
+  //         formattedResponse = respJson.error
+  //       } else {
+  //         formattedResponse = CosmosDBStatus.NotConfigured
+  //       }
+  //     }
+  //     if (!res.ok) {
+  //       return {
+  //         cosmosDB: false,
+  //         status: formattedResponse
+  //       }
+  //     } else {
+  //       return {
+  //         cosmosDB: true,
+  //         status: formattedResponse
+  //       }
+  //     }
+  //   })
+  //   .catch(err => {
+  //     console.error('There was an issue fetching your data.')
+  //     return {
+  //       cosmosDB: false,
+  //       status: err
+  //     }
+  //   })
+  // return response
 }
 
 export const frontendSettings = async (): Promise<Response | null> => {
-  const response = await fetch('/frontend_settings', {
+  const response = await fetch('/api/frontend_settings', {
     method: 'GET'
   })
     .then(res => {
