@@ -1,0 +1,12 @@
+POST http://localhost:7071/api/chat-post HTTP/1.1
+Content-Type: application/json
+
+{
+    "messages": "Hello world!",
+    "session_id": "1234",
+    "user_id": "5678"
+}
+###
+GET http://localhost:7071/api/health HTTP/1.1
+
+###
