@@ -2,43 +2,76 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "chrome",
-      "request": "launch",
-      "name": "Frontend: Launch Chrome debugger",
-      "url": "http://localhost:5173/",
-      "webRoot": "${workspaceFolder}/frontend",
-      "smartStep": true,
-      "preLaunchTask": "Web npm start",
-      "presentation": {
-        "hidden": false,
-        "group": "Frontend & Backend",
-        "order": 3
-      }
-    },
-    {
-      "name": "Debug Backend",
+      "name": "Debug Stack",
       "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 9091
+        "port": 4280
       },
-      "preLaunchTask": "func: host start",
-      "presentation": {
-        "hidden": false,
-        "group": "Frontend & Backend",
-        "order": 2
-      }
+      "preLaunchTask": "SWA Start",
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // {
+    //   "type": "chrome",
+    //   "request": "launch",
+    //   "name": "Frontend: Launch Chrome debugger",
+    //   "url": "http://localhost:5173/",
+    //   "webRoot": "${workspaceFolder}/frontend",
+    //   "smartStep": true,
+    //   "preLaunchTask": "Web npm start",
+    //   "presentation": {
+    //     "hidden": false,
+    //     "group": "Frontend & Backend",
+    //     "order": 3
+    //   }
+    // },
+    // {
+    //   "name": "Debug Backend",
+    //   "type": "debugpy",
+    //   "request": "attach",
+    //   "connect": {
+    //     "host": "localhost",
+    //     "port": 9091
+    //   },
+    //   "preLaunchTask": "func: host start",
+    //   "presentation": {
+    //     "hidden": false,
+    //     "group": "Frontend & Backend",
+    //     "order": 2
+    //   }
+    // }
   ],
-  "compounds": [
-    {
-      "name": "Full Stack",
-      "configurations": ["Debug Backend", "Frontend: Launch Chrome debugger"],
-      "presentation": {
-        "hidden": false,
-        "order": 1
-      }
-    }
-  ]
+  // "compounds": [
+  //   {
+  //     "name": "Full Stack",
+  //     "configurations": ["Debug Backend", "Frontend: Launch Chrome debugger"],
+  //     "presentation": {
+  //       "hidden": false,
+  //       "order": 1
+  //     }
+  //   }
+  // ]
 }
