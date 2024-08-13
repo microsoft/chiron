@@ -2,41 +2,43 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Sample App Backend",
-      "type": "python",
-      "request": "launch",
-      "module": "quart",
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "QUART_APP": "app:app",
-        "QUART_ENV": "development",
-        "QUART_DEBUG": "0"
-      },
-      "args": [
-        "run",
-        "--no-reload",
-        "-p 50505"
-      ],
-      "console": "integratedTerminal",
-      "justMyCode": false
-    },
-    {
       "type": "chrome",
       "request": "launch",
       "name": "Frontend: Launch Chrome debugger",
-      "url": "http://127.0.0.1:50505",
+      "url": "http://localhost:5173/",
       "webRoot": "${workspaceFolder}/frontend",
-      "smartStep": true
+      "smartStep": true,
+      "preLaunchTask": "Web npm start",
+      "presentation": {
+        "hidden": false,
+        "group": "Frontend & Backend",
+        "order": 3
+      }
     },
     {
-      "name": "Attach to Python Functions",
+      "name": "Debug Backend",
       "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "localhost",
         "port": 9091
       },
-      "preLaunchTask": "func: host start"
+      "preLaunchTask": "func: host start",
+      "presentation": {
+        "hidden": false,
+        "group": "Frontend & Backend",
+        "order": 2
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack",
+      "configurations": ["Debug Backend", "Frontend: Launch Chrome debugger"],
+      "presentation": {
+        "hidden": false,
+        "order": 1
+      }
     }
   ]
 }

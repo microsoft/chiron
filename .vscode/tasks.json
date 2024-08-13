@@ -2,6 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Web npm start",
+      "detail": "Start up web app using npm",
+      "type": "npm",
+      "script": "dev",
+      "options": {
+        "cwd": "${workspaceFolder}/src/frontend/" //,
+        // "env": {
+        //     "VITE_API_BASE_URL": "${env:AZURE_FUNCTION_ENDPOINT}",
+        //     "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING": "${env:APPLICATIONINSIGHTS_CONNECTION_STRING}",
+        //     "BROWSER": "none"
+        // }
+      },
+      "presentation": {
+        "panel": "dedicated",
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "npm",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "VITE v\\d+\\.\\d+\\.\\d+  ready"
+        }
+      }
+    },
+    {
       "type": "func",
       "label": "func: host start",
       "command": "host start",
@@ -9,7 +35,7 @@
       "isBackground": true,
       "dependsOn": "pip install (functions)",
       "options": {
-        "cwd": "${workspaceFolder}/src/functionapp"
+        "cwd": "${workspaceFolder}/src/backend"
       }
     },
     {
@@ -26,7 +52,7 @@
       },
       "problemMatcher": [],
       "options": {
-        "cwd": "${workspaceFolder}/src/functionapp"
+        "cwd": "${workspaceFolder}/src/backend"
       }
     }
   ]
