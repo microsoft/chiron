@@ -57,23 +57,23 @@
         }
       }
     },
-    {
-      "label": "Web npm start",
-      "detail": "Start up web app using npm",
-      "type": "npm",
-      "script": "dev",
-      "options": {
-        "cwd": "${workspaceFolder}/src/frontend/" //,
-        // "env": {
-        //     "VITE_API_BASE_URL": "${env:AZURE_FUNCTION_ENDPOINT}",
-        //     "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING": "${env:APPLICATIONINSIGHTS_CONNECTION_STRING}",
-        //     "BROWSER": "none"
-        // }
-      },
-      "presentation": {
-        "panel": "dedicated",
-      }
-    },
+    // {
+    //   "label": "Web npm start",
+    //   "detail": "Start up web app using npm",
+    //   "type": "npm",
+    //   "script": "dev",
+    //   "options": {
+    //     "cwd": "${workspaceFolder}/src/frontend/" //,
+    //     // "env": {
+    //     //     "VITE_API_BASE_URL": "${env:AZURE_FUNCTION_ENDPOINT}",
+    //     //     "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING": "${env:APPLICATIONINSIGHTS_CONNECTION_STRING}",
+    //     //     "BROWSER": "none"
+    //     // }
+    //   },
+    //   "presentation": {
+    //     "panel": "dedicated",
+    //   }
+    // },
     {
       "type": "func",
       "label": "func: host start",
