@@ -8,5 +8,6 @@ Content-Type: application/json
 }
 ###
 GET http://localhost:7071/api/health HTTP/1.1
+Content-Type: application/json
 
 ###

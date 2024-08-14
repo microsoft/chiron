@@ -7,7 +7,7 @@ azure-functions
 azure.identity
 azure-search-documents
 azurefunctions.extensions.bindings.blob
-flask
+langgraph
 langchain_community
 langchain_openai
 python-dotenv
