@@ -102,39 +102,40 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     }
 
     const getHistoryEnsure = async () => {
-      dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Loading })
-      historyEnsure()
-        .then(response => {
-          if (response?.cosmosDB) {
-            fetchChatHistory()
-              .then(res => {
-                if (res) {
-                  dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Success })
-                  dispatch({ type: 'SET_COSMOSDB_STATUS', payload: response })
-                } else {
-                  dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
-                  dispatch({
-                    type: 'SET_COSMOSDB_STATUS',
-                    payload: { cosmosDB: false, status: CosmosDBStatus.NotWorking }
-                  })
-                }
-              })
-              .catch(_err => {
-                dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
-                dispatch({
-                  type: 'SET_COSMOSDB_STATUS',
-                  payload: { cosmosDB: false, status: CosmosDBStatus.NotWorking }
-                })
-              })
-          } else {
-            dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
-            dispatch({ type: 'SET_COSMOSDB_STATUS', payload: response })
-          }
-        })
-        .catch(_err => {
-          dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
-          dispatch({ type: 'SET_COSMOSDB_STATUS', payload: { cosmosDB: false, status: CosmosDBStatus.NotConfigured } })
-        })
+      dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
+    //   dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Loading })
+    //   historyEnsure()
+    //     .then(response => {
+    //       if (response?.cosmosDB) {
+    //         fetchChatHistory()
+    //           .then(res => {
+    //             if (res) {
+    //               dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Success })
+    //               dispatch({ type: 'SET_COSMOSDB_STATUS', payload: response })
+    //             } else {
+    //               dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
+    //               dispatch({
+    //                 type: 'SET_COSMOSDB_STATUS',
+    //                 payload: { cosmosDB: false, status: CosmosDBStatus.NotWorking }
+    //               })
+    //             }
+    //           })
+    //           .catch(_err => {
+    //             dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
+    //             dispatch({
+    //               type: 'SET_COSMOSDB_STATUS',
+    //               payload: { cosmosDB: false, status: CosmosDBStatus.NotWorking }
+    //             })
+    //           })
+    //       } else {
+    //         dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
+    //         dispatch({ type: 'SET_COSMOSDB_STATUS', payload: response })
+    //       }
+    //     })
+    //     .catch(_err => {
+    //       dispatch({ type: 'UPDATE_CHAT_HISTORY_LOADING_STATE', payload: ChatHistoryLoadingState.Fail })
+    //       dispatch({ type: 'SET_COSMOSDB_STATUS', payload: { cosmosDB: false, status: CosmosDBStatus.NotConfigured } })
+    //     })
     }
     getHistoryEnsure()
   }, [])
