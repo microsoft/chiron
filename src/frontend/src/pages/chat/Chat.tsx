@@ -139,9 +139,10 @@ const Chat = () => {
     }
 
     if (resultMessage.role === ASSISTANT) {
-      assistantContent += resultMessage.content
+      // assistantContent += resultMessage.content
       assistantMessage = resultMessage
-      assistantMessage.content = assistantContent
+      // assistantMessage.content = assistantContent
+      assistantMessage.content = resultMessage.content
 
       if (resultMessage.context) {
         toolMessage = {
@@ -384,11 +385,12 @@ const Chat = () => {
                   errorResponseMessage = NO_CONTENT_ERROR
                   throw Error()
                 }
+
                 if (result.choices?.length > 0) {
-                  result.choices[0].messages.forEach(msg => {
-                    msg.id = result.id
-                    msg.date = new Date().toISOString()
-                  })
+                  // result.choices[0].messages.forEach(msg => {
+                  //   msg.id = result.id
+                  //   msg.date = new Date().toISOString()
+                  // })
                   if (result.choices[0].messages?.some(m => m.role === ASSISTANT)) {
                     setShowLoadingMessage(false)
                   }
