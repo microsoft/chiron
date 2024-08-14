@@ -9,7 +9,7 @@ store={}
 cosmos_db=None
 
 @agentBp.route(route="agent-post", methods=["POST"])
-def runChat(req: func.HttpRequest) -> func.HttpResponse:    
+def agentChat(req: func.HttpRequest) -> func.HttpResponse:    
     # global cosmos_db
     # logging.info('Python HTTP trigger function processed a request.')
     request_body = req.get_json()
