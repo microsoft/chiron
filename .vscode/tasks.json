@@ -2,6 +2,62 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "SWA Start",
+      "type": "shell",
+      "detail": "Start the Azure Static Web Apps emulator",
+      "command": "swa start", // --open
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "swa",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          // I think activeOnStart being true makes beginsPattern superfluous
+          "activeOnStart": true,
+          // match any line since activeOnStart makes beginsPattern superfluous
+          // but vs code requires it in the problemMatcher schema
+          "beginsPattern": "^\\Welcome to Azure Static Web Apps CLI",
+          //http://localhost:7071 validated successfully
+          "endsPattern": "^\\Azure Static Web Apps emulator started"
+          // not optimal but works
+          // "endsPattern": "^\\Azure Static Web Apps emulator started"
+        }
+      }
+    },
+    {
+      "label": "SWA Start (against running functions)",
+      "type": "shell",
+      "detail": "Start the Azure Static Web Apps emulator",
+      "command": "swa start --api-location backend --open",
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "swa",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          // I think activeOnStart being true makes beginsPattern superfluous
+          "activeOnStart": true,
+          // match any line since activeOnStart makes beginsPattern superfluous
+          // but vs code requires it in the problemMatcher schema
+          "beginsPattern": "^\\Welcome to Azure Static Web Apps CLI",
+          //http://localhost:7071 validated successfully
+          "endsPattern": "^\\Azure Static Web Apps emulator started"
+          // not optimal but works
+          // "endsPattern": "^\\Azure Static Web Apps emulator started"
+        }
+      }
+    },
+    {
       "label": "Web npm start",
       "detail": "Start up web app using npm",
       "type": "npm",
@@ -16,15 +72,6 @@
       },
       "presentation": {
         "panel": "dedicated",
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "npm",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": ".*",
-          "endsPattern": "VITE v\\d+\\.\\d+\\.\\d+  ready"
-        }
       }
     },
     {

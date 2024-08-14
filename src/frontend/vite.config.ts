@@ -5,14 +5,17 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: '../static',
+    outDir: './dist',
     emptyOutDir: true,
     sourcemap: true
   },
   server: {
-    proxy: {
-      '/ask': 'http://localhost:5000',
-      '/chat': 'http://localhost:5000'
-    }
+    port: 5173,
+    host: true,
   }
+  //   proxy: {
+  //     '/ask': 'http://localhost:5000',
+  //     '/chat': 'http://localhost:5000'
+  //   }
+  // }
 })

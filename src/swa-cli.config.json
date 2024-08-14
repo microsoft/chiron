@@ -1,0 +1,15 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "src": {
+      "appLocation": "frontend",
+      "apiLocation": "backend",
+      "outputLocation": "dist",
+      "apiLanguage": "python",
+      "apiVersion": "3.8",
+      "appBuildCommand": "NODE_OPTIONS=--max_old_space_size=8192 npm run build",
+      "run": "npm run dev",
+      "appDevserverUrl": "http://localhost:5173"
+    }
+  }
+}
