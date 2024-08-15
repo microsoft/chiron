@@ -17,7 +17,19 @@ Content-Type: application/json
     "messages": [
         {
             "role": "user", 
-            "content": "I have a meeting with Morpheus at 2pm on the 22nd. I should learn kung fu by then. Please add the meeting to my Outlook calendar"
+            "content": "I have a meeting with Morpheus at 2pm on the 22nd. I should learn kung fu by then. Please add the meeting to my Outlook calendar. What does my todo list look like?"
+        }
+    ]
+}
+###
+POST http://localhost:7071/api/test-chat HTTP/1.1
+Content-Type: application/json
+
+{
+    "messages": [
+        {
+            "role": "user", 
+            "content": "What does my todo list look like?"
         }
     ]
 }
