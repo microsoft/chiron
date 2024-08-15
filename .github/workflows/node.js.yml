@@ -18,7 +18,7 @@ jobs:
         working-directory: src/frontend
     strategy:
       matrix:
-        node-version: [18.x, 21.x]
+        node-version: [21.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
