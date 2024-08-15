@@ -26,6 +26,7 @@ def send_email(message: str, recipients: list[str]) -> str: # I wonder how well 
 @tool
 def create_calendar_event(event_name: str, datetime: datetime) -> str:
     """Create a calendar event in Outlook."""
+    # todo: add event creation logic
     return f"Created an Outlook on {datetime} event named {event_name}"
 
 system_prompt = '''ou are a Microsoft Outlook Management Agent. Your primary function
