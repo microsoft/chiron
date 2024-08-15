@@ -7,16 +7,12 @@ from typing import Dict
 from langchain.agents import AgentExecutor
 from langchain_core.load import dumps
 
-# from azure.identity import DefaultAzureCredential
-
 testChatBp = func.Blueprint()
 
 @testChatBp.route(route="test-chat", methods=["POST"])
 def runTestChatBp(req: func.HttpRequest) -> func.HttpResponse:
     try:
         body = req.get_json()
-
-        config = AzureConfig()
 
         config = AzureConfig()
 
