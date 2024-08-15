@@ -1,170 +1,130 @@
+from typing import Dict
+import functools
+import operator
 from helper.azure_config import AzureConfig
+from langchain.agents import AgentExecutor
+from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
+from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts.chat import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import AzureChatOpenAI
+from langgraph.graph import StateGraph, END
+from typing import Annotated, Sequence, TypedDict
 
-import json
-from langchain.chains import create_history_aware_retriever
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain.memory import ConversationBufferWindowMemory
-from langchain_community.chat_message_histories.cosmos_db import CosmosDBChatMessageHistory
-from langchain_community.vectorstores.azuresearch import AzureSearch
-from langchain_core.chat_history import InMemoryChatMessageHistory
-from langchain_core.prompts.chat import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory#, IterableReadableStream, RunOutput
-from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
+# https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/#construct-graph
 
-class ChatService:
-    def __init__(self, config: AzureConfig, user_id: str, session_id: str):
-        self.store = {}
-        self.user_id = user_id
-        self.session_id = session_id
-        self.embeddings: AzureOpenAIEmbeddings = AzureOpenAIEmbeddings(
-            azure_deployment=config.azure_emdedding_deployment,
+class Supervisor:
+    def __init__(self, config: AzureConfig, system_prompt: str, agents: Dict[str, AgentExecutor]):
+
+        #credential = DefaultAzureCredential()
+
+        llm = AzureChatOpenAI(
+            deployment_name=config.azure_deployment,
             openai_api_version=config.azure_openai_api_version,
-            azure_endpoint=config.azure_endpoint,
-            api_key=config.azure_openai_api_key,
-        )
-        index_name: str = config.index_name
-        self.vector_store: AzureSearch = AzureSearch(
-            azure_search_endpoint=config.vector_store_address,
-            azure_search_key=config.vector_store_password,
-            index_name=index_name,
-            embedding_function=self.embeddings.embed_query,
-        )
-        self.llm: AzureChatOpenAI = AzureChatOpenAI(
-            temperature=0.3,
-            azure_deployment=config.azure_deployment,
-            openai_api_version=config.azure_openai_api_version,
-            azure_endpoint=config.azure_endpoint,
-            api_key=config.azure_openai_api_key,
-        )
-        self.system_prompt = """You are a hepful AI assistant. You are given a chat history and the latest user question
-                    {context}
-                    """
+            # azure_endpoint=config.azure_endpoint,
+            
+            # todo: mi / env var
+            # azure_ad_token_provider=credential.get_token
 
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.system_prompt),
-                MessagesPlaceholder("chat_history"),
-                ("human", "{input}"),
-            ]
-        )
-        self.contextualize_system_prompt = """Given a chat history and the latest user question
-            which might reference context in the chat history, formulate a standalone question
-            which can be understood without the chat history. Do NOT answer the question,
-            just reformulate it if needed and otherwise return it as is.
-            """
-        self.contextualize_prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", self.contextualize_system_prompt),
-            MessagesPlaceholder("chat_history"),
-            ("human", "{input}"),
-        ]
-    )
-        self.history_aware_retriever = create_history_aware_retriever(
-            self.llm, 
-            self.vector_store.as_retriever(), 
-            self.contextualize_prompt
-        )
-        self.question_answer_chain = create_stuff_documents_chain(
-            llm=self.llm,
-            prompt=self.prompt,
-            document_prompt=PromptTemplate.from_template('{page_content}\n')
-        )
-        self.rag_chain = create_retrieval_chain(self.history_aware_retriever, self.question_answer_chain)
-        self.cosmos_db = CosmosDBChatMessageHistory(
-                cosmos_endpoint=config.history_store_address,
-                cosmos_database=config.history_store_database,
-                cosmos_container=config.history_store_container,
-                session_id=session_id,
-                user_id=user_id,
-                connection_string=config.history_connection_string             
-        )
-        self.conversational_rag_chain = RunnableWithMessageHistory(         
-            self.rag_chain,
-            self.get_session_history,                        
-            input_messages_key="input",
-            history_messages_key="chat_history",
-            output_messages_key="answer",
+            # error:
+            #   'DefaultAzureCredential failed to retrieve a token from the included
+            #    credentials.\nAttempted credentials:\n\tEnvironmentCredential: 
+            #    EnvironmentCredential authentication unavailable. Environment variables
+            #    are not fully configured.\nVisit 
+            #    https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot 
+            #    to troubleshoot this issue.\n\tManagedIdentityCredential: "get_token" requires
+            #    at least one scope\nTo mitigate this issue, please refer to the troubleshooting
+            #    guidelines here at 
+            #    https://aka.ms/azsdk/python/identity/defaultazurecredential/troubleshoot., 
+            #    NoneType: None'
         )
 
+        members = [agent_name for agent_name, agent in agents.items()]
 
-    def chat(self, user_msg: str) -> str:
-        response=self.conversational_rag_chain.invoke(
-            {
-                "input": user_msg
+        system_prompt = (
+            "You are a supervisor tasked with managing a conversation between the"
+            " following workers:  {members}. Given the following user request,"
+            " respond with the worker to act next. Each worker will perform a"
+            " task and respond with their results and status. When finished,"
+            " respond with FINISH."
+        )
+
+        # Our team supervisor is an LLM node. It just picks the next agent to process
+        # and decides when the work is completed
+        options = ["FINISH"] + members
+
+        # Using openai function calling can make output parsing easier for us
+        function_def = {
+            "name": "route",
+            "description": "Select the next role.",
+            "parameters": {
+                "title": "routeSchema",
+                "type": "object",
+                "properties": {
+                    "next": {
+                        "title": "Next",
+                        "anyOf": [
+                            {"enum": options},
+                        ],
+                    }
+                },
+                "required": ["next"],
             },
-            config={
-                "configurable":
-                    {
-                        "session_id": self.session_id
-                    }
-                }
-            )
+        }
 
-        self.save_current_session(self.session_id)
-
-        return response["answer"]
-
-
-    async def chat_streaming(self, user_msg: str): # -> IterableReadableStream<RunOutput>:
-        input = json.dumps({
-                "input": user_msg
-                }, config={
-                    "configurable":
-                    {
-                        "session_id": self.session_id
-                    }
-                })
-        
-        async for chunk in self.conversational_rag_chain.astream(input):
-            yield chunk
-
-        self.save_current_session(self.session_id)
-
-
-    def get_session_history(self, session_id: str) -> InMemoryChatMessageHistory:        
-        if session_id not in self.store:                                     
-            self.store[session_id]=InMemoryChatMessageHistory()  #load_session_history()
-            return self.store[session_id]
-        memory = ConversationBufferWindowMemory(
-            chat_memory=self.store[session_id],
-            k=5,
-            return_messages=True,
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="messages"),
+                (
+                    "system",
+                    "Given the conversation above, who should act next?"
+                    " Or should we FINISH? Select one of: {options}",
+                ),
+            ]
+        ).partial(options=str(options), members=", ".join(members))
+        supervisor_chain = (
+            prompt
+            | llm.bind_functions(functions=[function_def], function_call="route")
+            | JsonOutputFunctionsParser()
         )
-        assert len(memory.memory_variables) == 1
-        key = memory.memory_variables[0]
-        messages = memory.load_memory_variables({})[key]
-        self.store[session_id] = InMemoryChatMessageHistory(messages=messages)
-        return self.store[session_id]
 
+        workflow = StateGraph(AgentState)
 
-    def load_session_history(self) -> CosmosDBChatMessageHistory: 
-        self.cosmos_db.prepare_cosmos()      
-        self.cosmos_db.load_messages()  
-        return self.cosmos_db
+        for agent_name, agent in agents.items():
+            node = functools.partial(
+                self.__agent_node__,
+                agent=agent,
+                name=agent_name
+            )
+            workflow.add_node(agent_name, node)
 
+        for member in members:
+            # We want our workers to ALWAYS "report back" to the supervisor when done
+            workflow.add_edge(member, "supervisor")
+        
+        # The supervisor populates the "next" field in the graph state
+        # which routes to a node or finishes
+        conditional_map = {k: k for k in members}
+        conditional_map["FINISH"] = END
+        workflow.add_conditional_edges(
+            "supervisor", lambda x: x["next"], conditional_map
+        )
+        workflow.add_node("supervisor", supervisor_chain)
+        workflow.set_entry_point("supervisor")
+        self.graph = workflow.compile()
 
-    def save_current_session(self, session_id: str): 
-        self.cosmos_db.prepare_cosmos()  
-        messages_to_add = self.store[session_id].messages
-        self.cosmos_db.load_messages()
-        if(len(self.cosmos_db.messages) > 0):
-            self.cosmos_db.clear()
-        self.cosmos_db.add_messages(messages_to_add)
+    def __agent_node__(self, state, agent, name):
+        result = agent.invoke(state)
+        return {"messages": [HumanMessage(content=result["output"], name=name)]}
 
+    def run(self, messages):  # is that typing right?
+        return self.graph.invoke(messages)
 
-    # static
-    async def create_json_stream(chunks):
-        for chunk in chunks:
-            if not chunk['answer']:
-                continue
-
-            response_chunk = {
-                'delta': {
-                    'content': chunk['answer'],
-                    'role': 'assistant',
-                }
-            }
-
-            yield json.dumps(response_chunk) + '\n'
-
+# The agent state is the input to each node in the graph
+class AgentState(TypedDict):
+    # The annotation tells the graph that new messages will always
+    # be added to the current states
+    messages: Annotated[Sequence[BaseMessage], operator.add]
+    # The 'next' field indicates where to route to next
+    next: str
