@@ -12,6 +12,7 @@ from langgraph.graph import StateGraph, END
 from typing import Annotated, Sequence, TypedDict
 
 # https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/#construct-graph
+# https://langchain-ai.github.io/langgraph/how-tos/pass-run-time-values-to-tools
 
 class Supervisor:
     def __init__(self, config: AzureConfig, system_prompt: str, agents: Dict[str, AgentExecutor]):
@@ -105,18 +106,32 @@ class Supervisor:
         
         # The supervisor populates the "next" field in the graph state
         # which routes to a node or finishes
+        # our conditional map is the agents and the finish state
         conditional_map = {k: k for k in members}
         conditional_map["FINISH"] = END
+        # is there the possibility and value in having additiona conditional edges? what would be their src 
         workflow.add_conditional_edges(
-            "supervisor", lambda x: x["next"], conditional_map
+            "supervisor", self.__should_continue__, conditional_map
         )
         workflow.add_node("supervisor", supervisor_chain)
+        # does the conditional edge need to be the entry point?
         workflow.set_entry_point("supervisor")
         self.graph = workflow.compile()
 
     def __agent_node__(self, state, agent, name):
         result = agent.invoke(state)
         return {"messages": [HumanMessage(content=result["output"], name=name)]}
+
+    def __should_continue__(self, state, config):
+        print(state)
+        print(config)
+        
+        # the value of the next field is the key in the conditional map
+        # if our conditional map is just a dictionary of string, string
+        # why can't this function just return the value of the dictionary element?
+        # is there some value to that layer of abstraction?
+        return state["next"] 
+
 
     def run(self, messages):  # is that typing right?
         return self.graph.invoke(messages)
