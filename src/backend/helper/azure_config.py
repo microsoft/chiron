@@ -1,9 +1,10 @@
 import os
-from dotenv import load_dotenv 
+from dotenv import find_dotenv, load_dotenv 
 
 class AzureConfig:
     def __init__(self):
-        load_dotenv()
+        env_path = find_dotenv()
+        load_dotenv(env_path, override=True)
         self.azure_endpoint: str = os.getenv("AZURE_OPENAI_API_ENDPOINT")
         self.azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY")
         self.azure_openai_api_version: str = os.getenv("AZURE_OPENAI_API_VERSION")
