@@ -1,18 +1,15 @@
-from services.outlook_agent import OutlookAgent
-from services.todo_agent import TodoAgent
+from services.outlook_agent import outlook_agent
+from services.todo_agent import todo_agent
 import azure.functions as func
 from helper.azure_config import AzureConfig
 from services.chat_service import Supervisor
-from langchain_openai import AzureChatOpenAI
 from typing import Dict
 from langchain.agents import AgentExecutor
 from langchain_core.load import dumps
 
-
 # from azure.identity import DefaultAzureCredential
 
 testChatBp = func.Blueprint()
-
 
 @testChatBp.route(route="test-chat", methods=["POST"])
 def runTestChatBp(req: func.HttpRequest) -> func.HttpResponse:
@@ -24,8 +21,8 @@ def runTestChatBp(req: func.HttpRequest) -> func.HttpResponse:
         config = AzureConfig()
 
         agents: Dict[str, AgentExecutor] = {
-            "OutlookAgent": OutlookAgent,
-            "TodoAgent": TodoAgent
+            "OutlookAgent": outlook_agent,
+            "TodoAgent": todo_agent
         }
 
         supervisor = Supervisor(
