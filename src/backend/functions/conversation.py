@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import uuid
 import azure.functions as func
+from services.superivsor import Supervisor
 
 conversationBp = func.Blueprint()
 
