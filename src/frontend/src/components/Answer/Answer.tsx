@@ -2,7 +2,7 @@ import { FormEvent, useContext, useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { nord } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Checkbox, DefaultButton, Dialog, FontIcon, Stack, Text } from '@fluentui/react'
+import { Checkbox, DefaultButton, Dialog, FontIcon, Persona, PersonaPresence, Stack, Text } from '@fluentui/react'
 import { useBoolean } from '@fluentui/react-hooks'
 import { ThumbDislike20Filled, ThumbLike20Filled } from '@fluentui/react-icons'
 import DOMPurify from 'dompurify'
@@ -261,6 +261,8 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
               />
             </Stack.Item>
             <Stack.Item className={styles.answerHeader}>
+              {answer.name && <Persona text={answer.name} presence={PersonaPresence.online} imageUrl={answer.name == "OutlookAgent" ? "https://clipartcraft.com/images/outlook-logo-round.png" : "https://www.howtoanalyzedata.net/wp-content/uploads/2020/10/Microsoft_To-Do_icon.png"} />}
+
               {FEEDBACK_ENABLED && answer.message_id !== undefined && (
                 <Stack horizontal horizontalAlign="space-between">
                   <ThumbLike20Filled
