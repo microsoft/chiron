@@ -131,6 +131,8 @@ const Chat = () => {
   let assistantMessage = {} as ChatMessage
   let toolMessage = {} as ChatMessage
   let assistantContent = ''
+  // I don't care for this strategy but looking to achieve agent demonstration with minimal front-end changes
+  let assistantMessages = [] as ChatMessage[]
 
   const processResultMessage = (resultMessage: ChatMessage, userMessage: ChatMessage, conversationId?: string) => {
     if (resultMessage.content.includes('all_exec_results')) {
@@ -140,9 +142,10 @@ const Chat = () => {
 
     if (resultMessage.role === ASSISTANT) {
       // assistantContent += resultMessage.content
-      assistantMessage = resultMessage
+      // assistantMessage = resultMessage
       // assistantMessage.content = assistantContent
-      assistantMessage.content = resultMessage.content
+      // assistantMessage.content = resultMessage.content
+      assistantMessages.push(resultMessage)
 
       if (resultMessage.context) {
         toolMessage = {
@@ -156,6 +159,9 @@ const Chat = () => {
 
     if (resultMessage.role === TOOL) toolMessage = resultMessage
 
+    // if this is a new conversation, add the user message... 
+    // also checking for existence of tool messages which we won't have
+    // in this use case (despite invoking tools); this due to langchain
     if (!conversationId) {
       isEmpty(toolMessage)
         ? setMessages([...messages, userMessage, assistantMessage])
@@ -228,10 +234,10 @@ const Chat = () => {
                 runningText += obj
                 result = JSON.parse(runningText)
                 if (result.choices?.length > 0) {
-                  result.choices[0].messages.forEach(msg => {
-                    msg.id = result.id
-                    msg.date = new Date().toISOString()
-                  })
+                  // result.choices[0].messages.forEach(msg => {
+                  //   msg.id = result.id
+                  //   msg.date = new Date().toISOString()
+                  // })
                   if (result.choices[0].messages?.some(m => m.role === ASSISTANT)) {
                     setShowLoadingMessage(false)
                   }
@@ -253,9 +259,12 @@ const Chat = () => {
             }
           })
         }
-        conversation.messages.push(toolMessage, assistantMessage)
+
+        // conversation.messages.push(toolMessage, assistantMessage)
+        conversation.messages = conversation.messages.concat(assistantMessages);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation })
-        setMessages([...messages, toolMessage, assistantMessage])
+        // setMessages([...messages, toolMessage, assistantMessage])
+        setMessages([...messages, ...assistantMessages]);
       }
     } catch (e) {
       if (!abortController.signal.aborted) {
@@ -286,6 +295,7 @@ const Chat = () => {
       setShowLoadingMessage(false)
       abortFuncs.current = abortFuncs.current.filter(a => a !== abortController)
       setProcessMessages(messageStatus.Done)
+      assistantMessages = [];
     }
 
     return abortController.abort()
@@ -789,8 +799,9 @@ const Chat = () => {
                       </div>
                     ) : answer.role === 'assistant' ? (
                       <div className={styles.chatMessageGpt}>
-                        <Answer
+                        <Answer key={answer.id}
                           answer={{
+                            name: answer.name,
                             answer: answer.content,
                             citations: parseCitationFromMessage(messages[index - 1]),
                             plotly_data: parsePlotFromMessage(messages[index - 1]),
