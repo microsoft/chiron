@@ -52,7 +52,9 @@ The following tooling is required on your local dev environment:
 - VS Code
 - [Static Web Apps CLI](https://azure.github.io/static-web-apps-cli/)
 - [Azure Functions - Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=macos%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-python#v2)
-- Various NPM packages...
+- [Vite front-end tooling](https://vitejs.dev/)
+- [TypeScript language support](https://www.typescriptlang.org/)
+- Various NPM packages can help facilicate the prereqs...
     ```
     npm install -g vite
     npm install -g typescript
