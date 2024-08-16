@@ -21,20 +21,19 @@ class Todo:
     def toJson(self):
         return json.dumps(self, default=lambda o: o.__dict__ if not isinstance(o, datetime) else o.isoformat())
 
-
 config = AzureConfig()
 
 llm = AzureChatOpenAI(
     deployment_name=config.azure_deployment,
     openai_api_version=config.azure_openai_api_version,
 )
+
 todos: List[Todo] = [
     Todo("Take the cat to the vet", datetime(2024, 8, 31)),
     Todo("Take son to dentist", datetime(2024, 8, 16)),
     Todo("Get groceries", datetime(2024, 8, 17)),
     Todo("Get my head checked", datetime(1980, 12, 25)),
 ]
-
 
 ### Tools ### considering moving to separate directory
 @tool
@@ -48,14 +47,13 @@ def create_todo(
 
 
 # explore other tool options e.g. content_and_artifact
-@tool  # (parse_docstring=True, response_format="content_and_artifact")
+@tool  # (parse_docstring=True, response_format="content_and_artifact") # 
 def list_todos() -> str:  # todo order by priority, and use optional filter on tags
     """List out todos on todo list.
     
     Args:
         query: The user's search going to Azure AI Search looking for somethings...
         k: the number of results to return
-
     
     """  # todo: add arg descriptions to tool descriptions
     todo_json = json.dumps([todo.toJson() for todo in todos])  # list[Todo]
