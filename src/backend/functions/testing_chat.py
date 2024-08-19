@@ -2,12 +2,10 @@ from services.outlook_agent import outlook_agent
 from services.todo_agent import todo_agent
 import azure.functions as func
 from helper.azure_config import AzureConfig
-from services.chat_service import Supervisor
+from services.supervisor import Supervisor
 from typing import Dict
 from langchain.agents import AgentExecutor
 from langchain_core.load import dumps
-
-# from azure.identity import DefaultAzureCredential
 
 testChatBp = func.Blueprint()
 
@@ -15,8 +13,6 @@ testChatBp = func.Blueprint()
 def runTestChatBp(req: func.HttpRequest) -> func.HttpResponse:
     try:
         body = req.get_json()
-
-        config = AzureConfig()
 
         config = AzureConfig()
 

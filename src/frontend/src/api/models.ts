@@ -1,6 +1,7 @@
 import Plotly from 'react-plotly.js'
 
 export type AskResponse = {
+  name?: string // agent name
   answer: string
   citations: Citation[]
   plotly_data: AzureSqlServerCodeExecResult | null
@@ -45,6 +46,7 @@ export type AzureSqlServerExecResults = {
 }
 
 export type ChatMessage = {
+  name?: string // agent name
   id: string
   role: string
   content: string
