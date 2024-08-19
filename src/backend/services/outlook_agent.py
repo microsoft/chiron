@@ -47,7 +47,6 @@ prompt = ChatPromptTemplate.from_messages(
 
 tools = [send_email, create_calendar_event]
 
-# helping to check patients
 agent = create_openai_tools_agent(llm, tools, prompt)
 
 outlook_agent = AgentExecutor(agent=agent, tools=tools)
