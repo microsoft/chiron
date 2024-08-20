@@ -1,17 +1,16 @@
-from datetime import datetime
+import azure.functions as func
 import json
 import uuid
-import azure.functions as func
-from helper.azure_config import AzureConfig
-from services.outlook_agent import outlook_agent
-from services.todo_agent import todo_agent
-import azure.functions as func
-from helper.azure_config import AzureConfig
-from services.supervisor import Supervisor
+from datetime import datetime
 from typing import Dict, List
+from agents.outlook_agent import outlook_agent
+from agents.todo_agent import todo_agent
+from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor
-
+from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import BaseMessage, HumanMessage
+from services.llm_with_tools import acall_llm_with_tools
+from services.supervisor import Supervisor
 
 conversationBp = func.Blueprint()
 
@@ -23,41 +22,77 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
 
         config = AzureConfig()
 
-        agents: Dict[str, AgentExecutor] = {
-            "OutlookAgent": outlook_agent,
-            "TodoAgent": todo_agent,
-        }
-
         # UI sends the full conversation, we only want what the user said
         last_msg = body.get("messages")[-1]
 
         human_msg = HumanMessage(**last_msg)
 
-        supervisor = Supervisor(
-            config,
-            """You are a Supervisor LLM responsible for orchestrating interactions
-            between the user and two specialized agents: the Outlook Management Agent and
-            the To-Do List Management Agent. Your primary function is to delegate
-            tasks to the appropriate agent based on the user’s requests and ensure
-            seamless coordination between the agents.""",
-            agents,
+        # credential = DefaultAzureCredential()
+
+        llm = AzureChatOpenAI(
+            deployment_name=config.azure_openai_chat_deployment,
+            openai_api_version=config.azure_openai_chat_api_version,
+            # azure_endpoint=config.azure_endpoint,
+            # todo: mi / env var
+            # azure_ad_token_provider=credential.get_token
+            # error:
+            #   'DefaultAzureCredential failed to retrieve a token from the included
+            #    credentials.\nAttempted credentials:\n\tEnvironmentCredential:
+            #    EnvironmentCredential authentication unavailable. Environment variables
+            #    are not fully configured.\nVisit
+            #    https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot
+            #    to troubleshoot this issue.\n\tManagedIdentityCredential: "get_token" requires
+            #    at least one scope\nTo mitigate this issue, please refer to the troubleshooting
+            #    guidelines here at
+            #    https://aka.ms/azsdk/python/identity/defaultazurecredential/troubleshoot.,
+            #    NoneType: None'
         )
 
-        langchain_messages: List[BaseMessage] = await supervisor.arun(
-            {"messages": [human_msg]}
-        )
-
+        langchain_messages: List[BaseMessage] = []
         openai_messages = []
+
+        if config.use_supervisor:
+            agents: Dict[str, AgentExecutor] = {
+                "OutlookAgent": outlook_agent,
+                "TodoAgent": todo_agent,
+            }
+
+            supervisor = Supervisor(
+                config,
+                """You are a Supervisor LLM responsible for orchestrating interactions
+                between the user and two specialized agents: the Outlook Management Agent and
+                the To-Do List Management Agent. Your primary function is to delegate
+                tasks to the appropriate agent based on the user’s requests and ensure
+                seamless coordination between the agents.""",
+                agents,
+            )
+
+            langchain_messages: List[BaseMessage] = await supervisor.arun(
+                {"messages": [human_msg]}
+            )
+        else:
+            resp: List[BaseMessage] = await acall_llm_with_tools(llm, human_msg)
+
+            langchain_messages = [resp]
 
         for msg in langchain_messages:
             if msg.type != "human":
+                dict_msg = msg.dict()
                 openai_messages.append(
                     {
-                        "name": msg.name,
+                        "name": (
+                            dict_msg["name"]
+                            if "name" in dict_msg
+                            else "Your LLM Assistant"
+                        ),
                         "id": msg.id,
                         "role": "assistant",
                         "content": msg.content,
-                        "date": msg.dict()["date"],
+                        "date": (
+                            dict_msg["date"]
+                            if "date" in dict_msg
+                            else datetime.now().isoformat()
+                        ),
                     }
                 )
 
