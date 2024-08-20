@@ -31,6 +31,18 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
     if (Object.values(Feedback).includes(answer.feedback)) return answer.feedback
     return Feedback.Neutral
   }
+  let personaUrl = './favicon.ico'
+  switch (answer.name) {
+    case "OutlookAgent":
+      personaUrl = "https://clipartcraft.com/images/outlook-logo-round.png"
+      break;
+    case "ToDoAgent":
+      personaUrl = "https://www.howtoanalyzedata.net/wp-content/uploads/2020/10/Microsoft_To-Do_icon.png"
+      break;
+    default:
+      personaUrl = './favicon.ico'
+      break;
+  }
 
   const [isRefAccordionOpen, { toggle: toggleIsRefAccordionOpen }] = useBoolean(false)
   const filePathTruncationLimit = 50
@@ -242,6 +254,10 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
       )
     }
   }
+
+  console.log("Answer name: ", answer.name);
+  console.log("Persona URL: ", personaUrl);
+
   return (
     <>
       <Stack className={styles.answerContainer} tabIndex={0}>
@@ -261,7 +277,10 @@ export const Answer = ({ answer, onCitationClicked, onExectResultClicked }: Prop
               />
             </Stack.Item>
             <Stack.Item className={styles.answerHeader}>
-              {answer.name && <Persona text={answer.name} presence={PersonaPresence.online} imageUrl={answer.name == "OutlookAgent" ? "https://clipartcraft.com/images/outlook-logo-round.png" : "https://www.howtoanalyzedata.net/wp-content/uploads/2020/10/Microsoft_To-Do_icon.png"} />}
+              {answer.name && <Persona 
+                text={answer.name} 
+                presence={PersonaPresence.online} 
+                imageUrl={personaUrl} />}
 
               {FEEDBACK_ENABLED && answer.message_id !== undefined && (
                 <Stack horizontal horizontalAlign="space-between">

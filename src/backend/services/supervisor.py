@@ -22,29 +22,8 @@ import uuid
 
 class Supervisor:
     def __init__(
-        self, config: AzureConfig, system_prompt: str, agents: Dict[str, AgentExecutor]
+        self, config: AzureConfig, system_prompt: str, agents: Dict[str, AgentExecutor], llm: AzureChatOpenAI
     ):
-
-        # credential = DefaultAzureCredential()
-
-        llm = AzureChatOpenAI(
-            deployment_name=config.azure_deployment,
-            openai_api_version=config.azure_openai_api_version,
-            # azure_endpoint=config.azure_endpoint,
-            # todo: mi / env var
-            # azure_ad_token_provider=credential.get_token
-            # error:
-            #   'DefaultAzureCredential failed to retrieve a token from the included
-            #    credentials.\nAttempted credentials:\n\tEnvironmentCredential:
-            #    EnvironmentCredential authentication unavailable. Environment variables
-            #    are not fully configured.\nVisit
-            #    https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot
-            #    to troubleshoot this issue.\n\tManagedIdentityCredential: "get_token" requires
-            #    at least one scope\nTo mitigate this issue, please refer to the troubleshooting
-            #    guidelines here at
-            #    https://aka.ms/azsdk/python/identity/defaultazurecredential/troubleshoot.,
-            #    NoneType: None'
-        )
 
         members = [agent_name for agent_name, agent in agents.items()]
 
