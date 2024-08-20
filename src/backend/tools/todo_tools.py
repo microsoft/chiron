@@ -1,14 +1,8 @@
 from datetime import datetime
-from helper.azure_config import AzureConfig
 import json
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.prompts.chat import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI
 from typing import List
 import uuid
-
 
 class Todo:
     def __init__(self, task: str, due_date: datetime, tags: list[str] = []):
@@ -21,13 +15,6 @@ class Todo:
     def toJson(self):
         return json.dumps(self, default=lambda o: o.__dict__ if not isinstance(o, datetime) else o.isoformat())
 
-config = AzureConfig()
-
-llm = AzureChatOpenAI(
-    deployment_name=config.azure_deployment,
-    openai_api_version=config.azure_openai_api_version,
-)
-
 todos: List[Todo] = [
     Todo("Take the cat to the vet", datetime(2024, 8, 31)),
     Todo("Take son to dentist", datetime(2024, 8, 16)),
@@ -35,7 +22,6 @@ todos: List[Todo] = [
     Todo("Get my head checked", datetime(1980, 12, 25)),
 ]
 
-### Tools ### considering moving to separate directory
 @tool
 def create_todo(
     todo: str, datetime: datetime
@@ -90,26 +76,4 @@ def update_todo(todo_id: str, todo: str, datetime: datetime) -> Todo:
             return todo.toJson()
     return None
 
-
-system_prompt = """You are a To-Do List Management Agent. Your primary function
-is to help users manage their tasks efficiently. You can add, remove, update, 
-and list tasks. You can also set deadlines and priorities for tasks."""
-
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            system_prompt,
-        ),
-        MessagesPlaceholder(variable_name="messages"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ]
-)
-
-tools = [create_todo, list_todos, complete_todo, delete_todo, update_todo]
-
-agent = create_openai_tools_agent(llm, tools, prompt)
-
-todo_agent = AgentExecutor(agent=agent, tools=tools)
-
-__all__ = [todo_agent]
+__all__ = [create_todo, list_todos, complete_todo, delete_todo, update_todo]
