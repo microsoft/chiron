@@ -1,26 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: sample-app-aoai-chatgpt
-metadata:
-  template: sample-app-aoai-chatgpt@0.0.1-beta
-services:
-  backend:
-    project: .
-    language: py
-    host: appservice
-    hooks:
-      prepackage:
-        windows:
-          shell: pwsh
-          run:  cd ./frontend;npm install;npm run build
-          interactive: true
-          continueOnError: false
-        posix:
-          shell: sh
-          run:  cd ./frontend;npm install;npm run build
-          interactive: true
-          continueOnError: false
-
 name: chiron-swa-langchain
 metadata:
   template: chiron-swa-langchain@0.0.1-beta
@@ -44,10 +23,10 @@ services:
       prepackage:
         windows:
           shell: pwsh
-          run: 'echo "VITE_API_BASE_URL=""$env:API_BASE_URL""" > .env.local ; echo "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=""$env:APPLICATIONINSIGHTS_CONNECTION_STRING""" >> .env.local'
+          run: 'echo "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=""$env:APPLICATIONINSIGHTS_CONNECTION_STRING""" >> .env.local'
         posix:
           shell: sh
-          run: 'echo VITE_API_BASE_URL=\"$API_BASE_URL\" > .env.local && echo VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=\"$APPLICATIONINSIGHTS_CONNECTION_STRING\" >> .env.local'    
+          run: 'echo VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=\"$APPLICATIONINSIGHTS_CONNECTION_STRING\" >> .env.local'    
       postdeploy:
         windows:
           shell: pwsh
