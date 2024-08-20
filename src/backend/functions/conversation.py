@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 from agents.outlook_agent import outlook_agent
 from agents.todo_agent import todo_agent
+from agents.knowledge_agent import knowledge_agent
 from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor
 from langchain_openai import AzureChatOpenAI
@@ -12,16 +13,20 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from services.llm_with_tools import acall_llm_with_tools
 from services.supervisor import Supervisor
 
+
 conversationBp = func.Blueprint()
 
 
 @conversationBp.route(route="conversation", methods=["POST"])
 async def converse(req: func.HttpRequest) -> func.HttpResponse:
-    try:
+    # try:  
         body = req.get_json()
 
         config = AzureConfig()
-
+        llm = AzureChatOpenAI(
+            deployment_name=config.azure_openai_chat_deployment,
+            openai_api_version=config.azure_openai_chat_api_version
+        )
         # UI sends the full conversation, we only want what the user said
         last_msg = body.get("messages")[-1]
 
@@ -53,23 +58,29 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
 
         if config.use_supervisor:
             agents: Dict[str, AgentExecutor] = {
+                "KnowledgeAgent": knowledge_agent,  # this should be replaced with the actual LLM
                 "OutlookAgent": outlook_agent,
                 "TodoAgent": todo_agent,
+                
             }
 
+            human_msg = HumanMessage(**last_msg)
+
             supervisor = Supervisor(
-                config,
-                """You are a Supervisor LLM responsible for orchestrating interactions
-                between the user and two specialized agents: the Outlook Management Agent and
-                the To-Do List Management Agent. Your primary function is to delegate
-                tasks to the appropriate agent based on the user’s requests and ensure
-                seamless coordination between the agents.""",
-                agents,
+            config,
+            """You are a Supervisor LLM responsible for orchestrating interactions
+            between the user and two specialized agents: the Outlook Management Agent and
+            the To-Do List Management Agent. Your primary function is to delegate
+            tasks to the appropriate agent based on the user’s requests and ensure
+            seamless coordination between the agents.""",
+            agents,
+            llm
             )
 
             langchain_messages: List[BaseMessage] = await supervisor.arun(
-                {"messages": [human_msg]}
-            )
+            {"messages": [human_msg]}
+        
+        )
         else:
             resp: List[BaseMessage] = await acall_llm_with_tools(llm, human_msg)
 
@@ -107,5 +118,6 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
         }
 
         return func.HttpResponse(json.dumps(response_body), status_code=200)
-    except Exception as e:
-        return func.HttpResponse(str(e), status_code=500)
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")  # TODO: log error to Azure Application Insights or similar for debugging and troubleshooting
+    #     return func.HttpResponse(str(e), status_code=500)
