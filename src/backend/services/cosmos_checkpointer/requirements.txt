@@ -1,0 +1,7 @@
+azure-cosmos
+langgraph
+pymongo
+langchain_openai
+motor
+python-dotenv
+aiohttp
