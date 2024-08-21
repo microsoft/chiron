@@ -90,7 +90,9 @@ module api 'core/host/functions.bicep' = {
     storageAccountName: storageAccount.outputs.name
     runtimeName: 'python'
     runtimeVersion: '3.11'
-    scmDoBuildDuringDeployment: true
+    numberOfWorkers: 1
+    minimumElasticInstanceCount: 0
+    scmDoBuildDuringDeployment: false
     managedIdentity: true
     appSettings: {
       // openai
@@ -117,7 +119,7 @@ module frontend 'core/host/staticwebapp.bicep' = {
     sku: {
       name: 'Free'
     }
-    tags: union(tags, { 'azd-service-name': 'frontend' })
+    tags: union(tags, { 'azd-service-name': 'web' })
   }
 }
 

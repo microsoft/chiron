@@ -23,10 +23,10 @@ services:
       prepackage:
         windows:
           shell: pwsh
-          run: 'echo "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=""$env:APPLICATIONINSIGHTS_CONNECTION_STRING""" >> .env.local'
+          run: 'set NODE_OPTIONS=--max_old_space_size=8192 && echo "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=""$env:APPLICATIONINSIGHTS_CONNECTION_STRING""" >> .env.local'
         posix:
           shell: sh
-          run: 'echo VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=\"$APPLICATIONINSIGHTS_CONNECTION_STRING\" >> .env.local'    
+          run: 'export NODE_OPTIONS=--max_old_space_size=8192 && echo VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=\"$APPLICATIONINSIGHTS_CONNECTION_STRING\" >> .env.local'    
       postdeploy:
         windows:
           shell: pwsh
@@ -36,5 +36,5 @@ services:
           run: 'rm .env.local'
   api:
     project: ./src/backend
-    language: py
+    language: python
     host: function
