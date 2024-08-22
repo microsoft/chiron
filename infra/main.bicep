@@ -89,11 +89,11 @@ module api 'app/api.bicep' = {
     appSettings: {
       AzureWebJobsFeatureFlags: 'EnableWorkerIndexing'
       // openai
-      AZURE_OPENAI_API_ENDPOINT: openAi.outputs.name
-      AZURE_OPENAI_API_KEY: ''
-      AZURE_OPENAI_API_VERSION: ''
+      AZURE_OPENAI_ENDPOINT: openAi.outputs.name
+      AZURE_OPENAI_API_KEY: openAi.outputs.key
+      AZURE_OPENAI_API_VERSION: '2024-02-15-preview'
       AZURE_OPENAI_API_DEPLOYMENT_NAME: openAIDeploymentName
-      USE_SUPERVISOR: useSupervisor      
+      USE_SUPERVISOR: useSupervisor
     }
   }
 }
