@@ -29,9 +29,6 @@ param openAIModelName string = 'gpt-4o'
 param embeddingDeploymentName string = 'embedding'
 param embeddingModelName string = 'text-embedding-ada-002'
 
-// Used for Cosmos DB
-param cosmosAccountName string = ''
-
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 
@@ -60,9 +57,8 @@ module appServicePlan 'core/host/appserviceplan.bicep' = {
     tags: tags
     sku: {
       name: 'Y1'
-      capacity: 1
+      tier: 'Dynamic'
     }
-    kind: 'linux'
   }
 }
 
@@ -79,47 +75,62 @@ module storageAccount 'core/storage/storage-account.bicep' = {
   }
 }
 
-module api 'core/host/functions.bicep' = {
-  name: 'functionapp'
+// module api 'core/host/functions.bicep' = {
+//   name: 'functionapp'
+//   scope: resourceGroup
+//   params: {
+//     name: appServiceName
+//     location: location
+//     tags: union(tags, { 'azd-service-name': 'api' })
+//     appServicePlanId: appServicePlan.outputs.id
+//     storageAccountName: storageAccount.outputs.name
+//     runtimeName: 'python'
+//     runtimeVersion: '3.11'
+//     numberOfWorkers: 1
+//     minimumElasticInstanceCount: 0
+//     scmDoBuildDuringDeployment: false
+//     managedIdentity: true
+//     appSettings: {
+//       // openai
+//       AZURE_OPENAI_API_ENDPOINT: openAi.outputs.name
+//       AZURE_OPENAI_API_KEY: ''
+//       AZURE_OPENAI_API_VERSION: ''
+//       AZURE_OPENAI_API_DEPLOYMENT_NAME: openAIDeploymentName
+//       USE_SUPERVISOR: useSupervisor
+//       // cosmos
+//       AZURE_COSMOSDB_CONNECTION_STRING: ''
+//       AZURE_COSMOSDB_DATABASE_NAME: ''
+//       AZURE_COSMOSDB_CONTAINER_NAME: ''
+//     }
+//   }
+// }
+
+// The application backend
+module api './app/api.bicep' = {
+  name: 'api'
   scope: resourceGroup
   params: {
     name: appServiceName
     location: location
-    tags: union(tags, { 'azd-service-name': 'api' })
+    tags: tags
+    applicationInsightsName: ''
     appServicePlanId: appServicePlan.outputs.id
-    storageAccountName: storageAccount.outputs.name
-    runtimeName: 'python'
-    runtimeVersion: '3.11'
-    numberOfWorkers: 1
-    minimumElasticInstanceCount: 0
-    scmDoBuildDuringDeployment: false
+    keyVaultName: ''
     managedIdentity: true
+    storageAccountName: storageAccount.outputs.name
     appSettings: {
-      // openai
-      AZURE_OPENAI_API_ENDPOINT: openAi.outputs.name
-      AZURE_OPENAI_API_KEY: ''
-      AZURE_OPENAI_API_VERSION: ''
-      AZURE_OPENAI_API_DEPLOYMENT_NAME: openAIDeploymentName
-      USE_SUPERVISOR: useSupervisor
-      // cosmos
-      AZURE_COSMOSDB_CONNECTION_STRING: ''
-      AZURE_COSMOSDB_DATABASE_NAME: ''
-      AZURE_COSMOSDB_CONTAINER_NAME: ''
+      AzureWebJobsFeatureFlags: 'EnableWorkerIndexing'
     }
   }
 }
 
 var staticAppServiceName = !empty(frontendServiceName) ? frontendServiceName : '${abbrs.webStaticSites}frontend-${resourceToken}'
-module frontend 'core/host/staticwebapp.bicep' = {
+module web 'app/web.bicep' = {
   name: 'frontend'
   scope: resourceGroup
   params: {
     name: staticAppServiceName
     location: location
-    sku: {
-      name: 'Free'
-    }
-    tags: union(tags, { 'azd-service-name': 'web' })
   }
 }
 
@@ -156,18 +167,6 @@ module openAi 'core/ai/cognitiveservices.bicep' = {
   }
 }
 
-// The application database
-module cosmos 'db.bicep' = {
-  name: 'cosmos'
-  scope: resourceGroup
-  params: {
-    accountName: !empty(cosmosAccountName) ? cosmosAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
-    location: location
-    tags: tags
-    principalIds: [principalId, api.outputs.identityPrincipalId]
-  }
-}
-
 
 // USER ROLES
 module openAiRoleUser 'core/security/role.bicep' = {
@@ -185,7 +184,7 @@ module openAiRoleBackend 'core/security/role.bicep' = {
   scope: openAiResourceGroup
   name: 'openai-role-backend'
   params: {
-    principalId: api.outputs.identityPrincipalId
+    principalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
     roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
     principalType: 'ServicePrincipal'
   }
@@ -195,7 +194,7 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
-output BACKEND_URI string = api.outputs.uri
+output BACKEND_URI string = api.outputs.SERVICE_API_URI
 
 // openai
 output AZURE_OPENAI_ENDPOINT string = openAi.outputs.endpoint
@@ -203,8 +202,3 @@ output AZURE_OPENAI_API_DEPLOYMENT_NAME string = openAIDeploymentName
 output AZURE_OPENAI_MODEL_NAME string = openAIModelName
 output AZURE_OPENAI_EMBEDDING_NAME string = embeddingDeploymentName
 output USE_SUPERVISOR bool = useSupervisor
-
-// cosmos
-output AZURE_COSMOSDB_ACCOUNT string = cosmos.outputs.accountName
-output AZURE_COSMOSDB_DATABASE string = cosmos.outputs.databaseName
-output AZURE_COSMOSDB_CONVERSATIONS_CONTAINER string = cosmos.outputs.containerName

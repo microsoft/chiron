@@ -1,4 +1,3 @@
-metadata description = 'Creates an Azure Static Web Apps instance.'
 param name string
 param location string = resourceGroup().location
 param tags object = {}
