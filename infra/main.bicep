@@ -75,54 +75,47 @@ module storageAccount 'core/storage/storage-account.bicep' = {
   }
 }
 
-// module api 'core/host/functions.bicep' = {
-//   name: 'functionapp'
-//   scope: resourceGroup
-//   params: {
-//     name: appServiceName
-//     location: location
-//     tags: union(tags, { 'azd-service-name': 'api' })
-//     appServicePlanId: appServicePlan.outputs.id
-//     storageAccountName: storageAccount.outputs.name
-//     runtimeName: 'python'
-//     runtimeVersion: '3.11'
-//     numberOfWorkers: 1
-//     minimumElasticInstanceCount: 0
-//     scmDoBuildDuringDeployment: false
-//     managedIdentity: true
-//     appSettings: {
-//       // openai
-//       AZURE_OPENAI_API_ENDPOINT: openAi.outputs.name
-//       AZURE_OPENAI_API_KEY: ''
-//       AZURE_OPENAI_API_VERSION: ''
-//       AZURE_OPENAI_API_DEPLOYMENT_NAME: openAIDeploymentName
-//       USE_SUPERVISOR: useSupervisor
-//       // cosmos
-//       AZURE_COSMOSDB_CONNECTION_STRING: ''
-//       AZURE_COSMOSDB_DATABASE_NAME: ''
-//       AZURE_COSMOSDB_CONTAINER_NAME: ''
-//     }
-//   }
-// }
-
-// The application backend
-module api './app/api.bicep' = {
-  name: 'api'
+module api 'app/api.bicep' = {
+  name: 'functionapp'
   scope: resourceGroup
   params: {
     name: appServiceName
     location: location
-    tags: tags
-    applicationInsightsName: ''
+    tags: union(tags, { 'azd-service-name': 'api' })
     appServicePlanId: appServicePlan.outputs.id
+    storageAccountName: storageAccount.outputs.name
     keyVaultName: ''
     managedIdentity: true
-    storageAccountName: storageAccount.outputs.name
     appSettings: {
       AzureWebJobsFeatureFlags: 'EnableWorkerIndexing'
+      // openai
+      AZURE_OPENAI_API_ENDPOINT: openAi.outputs.name
+      AZURE_OPENAI_API_KEY: ''
+      AZURE_OPENAI_API_VERSION: ''
+      AZURE_OPENAI_API_DEPLOYMENT_NAME: openAIDeploymentName
+      USE_SUPERVISOR: useSupervisor      
     }
   }
 }
+
+// The application backend
+// module api './app/api.bicep' = {
+//   name: 'api'
+//   scope: resourceGroup
+//   params: {
+//     name: appServiceName
+//     location: location
+//     tags: tags
+//     applicationInsightsName: ''
+//     appServicePlanId: appServicePlan.outputs.id
+//     keyVaultName: ''
+//     managedIdentity: true
+//     storageAccountName: storageAccount.outputs.name
+//     appSettings: {
+//       AzureWebJobsFeatureFlags: 'EnableWorkerIndexing'
+//     }
+//   }
+// }
 
 var staticAppServiceName = !empty(frontendServiceName) ? frontendServiceName : '${abbrs.webStaticSites}frontend-${resourceToken}'
 module web 'app/web.bicep' = {
@@ -179,7 +172,7 @@ module openAiRoleUser 'core/security/role.bicep' = {
   }
 }
 
-// SYSTEM IDENTITIES
+// // SYSTEM IDENTITIES
 module openAiRoleBackend 'core/security/role.bicep' = {
   scope: openAiResourceGroup
   name: 'openai-role-backend'

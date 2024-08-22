@@ -1,10 +1,10 @@
-metadata description = 'Creates an Azure Cosmos DB for NoSQL account with a database.'
 param accountName string
 param databaseName string
 param location string = resourceGroup().location
 param tags object = {}
 
 param containers array = []
+param keyVaultName string
 param principalIds array = []
 
 module cosmos 'cosmos-sql-account.bicep' = {
@@ -13,6 +13,7 @@ module cosmos 'cosmos-sql-account.bicep' = {
     name: accountName
     location: location
     tags: tags
+    keyVaultName: keyVaultName
   }
 }
 
@@ -38,7 +39,7 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15
   ]
 }
 
-module roleDefinition 'cosmos-sql-role-def.bicep' = {
+module roleDefintion 'cosmos-sql-role-def.bicep' = {
   name: 'cosmos-sql-role-definition'
   params: {
     accountName: accountName
@@ -55,7 +56,7 @@ module userRole 'cosmos-sql-role-assign.bicep' = [for principalId in principalId
   name: 'cosmos-sql-user-role-${uniqueString(principalId)}'
   params: {
     accountName: accountName
-    roleDefinitionId: roleDefinition.outputs.id
+    roleDefinitionId: roleDefintion.outputs.id
     principalId: principalId
   }
   dependsOn: [
@@ -66,6 +67,7 @@ module userRole 'cosmos-sql-role-assign.bicep' = [for principalId in principalId
 
 output accountId string = cosmos.outputs.id
 output accountName string = cosmos.outputs.name
+output connectionStringKey string = cosmos.outputs.connectionStringKey
 output databaseName string = databaseName
 output endpoint string = cosmos.outputs.endpoint
-output roleDefinitionId string = roleDefinition.outputs.id
+output roleDefinitionId string = roleDefintion.outputs.id
