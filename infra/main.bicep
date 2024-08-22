@@ -7,7 +7,7 @@ param environmentName string
 
 @minLength(1)
 @description('Primary location for all resources')
-@allowed(['eastus','eastus2','northcentralus','southcentralus','westus'])
+@allowed(['eastus2'])   // The only US region where all resources (including SWAs are available)
 param location string
 
 param appServicePlanName string = ''
@@ -98,25 +98,6 @@ module api 'app/api.bicep' = {
   }
 }
 
-// The application backend
-// module api './app/api.bicep' = {
-//   name: 'api'
-//   scope: resourceGroup
-//   params: {
-//     name: appServiceName
-//     location: location
-//     tags: tags
-//     applicationInsightsName: ''
-//     appServicePlanId: appServicePlan.outputs.id
-//     keyVaultName: ''
-//     managedIdentity: true
-//     storageAccountName: storageAccount.outputs.name
-//     appSettings: {
-//       AzureWebJobsFeatureFlags: 'EnableWorkerIndexing'
-//     }
-//   }
-// }
-
 var staticAppServiceName = !empty(frontendServiceName) ? frontendServiceName : '${abbrs.webStaticSites}frontend-${resourceToken}'
 module web 'app/web.bicep' = {
   name: 'frontend'
@@ -124,6 +105,8 @@ module web 'app/web.bicep' = {
   params: {
     name: staticAppServiceName
     location: location
+    appServiceName: appServiceName
+
   }
 }
 
