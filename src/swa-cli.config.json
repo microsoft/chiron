@@ -9,7 +9,9 @@
       "apiVersion": "3.8",
       "appBuildCommand": "NODE_OPTIONS=--max_old_space_size=8192 npm run build",
       "run": "npm run dev",
-      "appDevserverUrl": "http://localhost:5173"
+      "appDevserverUrl": "http://localhost:5173",
+      "appName": "chirondemo1",
+      "resourceGroup": "rg-chiron1"
     }
   }
 }

@@ -3,7 +3,7 @@ from functions.health_check import healthCheckBp
 from functions.frontend_settings import frontendSettingsBp
 from functions.conversation import conversationBp
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION) 
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS) 
 
 app.register_functions(healthCheckBp)
 

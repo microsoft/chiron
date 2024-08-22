@@ -40,6 +40,7 @@ If you have existing Azure resources that you want to reuse, then you must first
 
 Run the following commands based on what you want to customize:
 
+* `azd env set AZURE_LOCATION {Location you'd like to use}`
 * `azd env set AZURE_OPENAI_RESOURCE {Name of existing OpenAI service}`
 * `azd env set AZURE_OPENAI_RESOURCE_GROUP {Name of existing resource group that OpenAI service is provisioned to}`
 * `azd env set AZURE_OPENAI_SKU_NAME {Name of OpenAI SKU}`. Defaults to 'S0'.

@@ -24,10 +24,6 @@ param allowedOrigins array = []
 param alwaysOn bool = true
 param appCommandLine string = ''
 param appSettings object = {}
-param authClientId string
-@secure()
-param authClientSecret string
-param authIssuerUri string
 param clientAffinityEnabled bool = false
 param enableOryxBuild bool = contains(kind, 'linux')
 param functionAppScaleLimit int = -1
@@ -36,8 +32,6 @@ param minimumElasticInstanceCount int = -1
 param numberOfWorkers int = -1
 param scmDoBuildDuringDeployment bool = false
 param use32BitWorkerProcess bool = false
-param ftpsState string = 'FtpsOnly'
-param healthCheckPath string = ''
 
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: name
@@ -45,17 +39,19 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
   tags: tags
   kind: kind
   properties: {
+    //py
+    reserved: true
+    //--
     serverFarmId: appServicePlanId
     siteConfig: {
       linuxFxVersion: linuxFxVersion
       alwaysOn: alwaysOn
-      ftpsState: ftpsState
+      ftpsState: 'FtpsOnly'
       appCommandLine: appCommandLine
       numberOfWorkers: numberOfWorkers != -1 ? numberOfWorkers : null
       minimumElasticInstanceCount: minimumElasticInstanceCount != -1 ? minimumElasticInstanceCount : null
       use32BitWorkerProcess: use32BitWorkerProcess
       functionAppScaleLimit: functionAppScaleLimit != -1 ? functionAppScaleLimit : null
-      healthCheckPath: healthCheckPath
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
       }
@@ -70,13 +66,13 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     name: 'appsettings'
     properties: union(appSettings,
       {
-        SCM_DO_BUILD_DURING_DEPLOYMENT: string(scmDoBuildDuringDeployment)
-        ENABLE_ORYX_BUILD: string(enableOryxBuild)
+        //py
+        //SCM_DO_BUILD_DURING_DEPLOYMENT: string(scmDoBuildDuringDeployment)
+        //ENABLE_ORYX_BUILD: string(enableOryxBuild)
+        //--
       },
       !empty(applicationInsightsName) ? { APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString } : {},
-      !empty(keyVaultName) ? { AZURE_KEY_VAULT_ENDPOINT: keyVault.properties.vaultUri } : {},
-      !empty(authClientSecret) ? { AUTH_CLIENT_SECRET: authClientSecret } : {}
-    )
+      !empty(keyVaultName) ? { AZURE_KEY_VAULT_ENDPOINT: keyVault.properties.vaultUri } : {})
   }
 
   resource configLogs 'config' = {
@@ -90,37 +86,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     dependsOn: [
       configAppSettings
     ]
-  }
-
-  resource configAuth 'config' = if (!(empty(authClientId))) {
-    name: 'authsettingsV2'
-    properties: {
-      globalValidation: {
-        requireAuthentication: true
-        unauthenticatedClientAction: 'RedirectToLoginPage'
-        redirectToProvider: 'azureactivedirectory'
-      }
-      identityProviders: {
-        azureActiveDirectory: {
-          enabled: true
-          registration: {
-            clientId: authClientId
-            clientSecretSettingName: 'AUTH_CLIENT_SECRET'
-            openIdIssuer: authIssuerUri
-          }
-          validation: {
-            defaultAuthorizationPolicy: {
-              allowedApplications: []
-            }
-          }
-        }
-      }
-      login: {
-        tokenStore: {
-          enabled: true
-        }
-      }
-    }
   }
 }
 
