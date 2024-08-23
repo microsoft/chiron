@@ -1,12 +1,12 @@
 from langchain_openai import AzureChatOpenAI
-from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from services.log_handler import LogHandler
 from tools.outlook_tools import create_calendar_event, send_email
 from tools.todo_tools import complete_todo, create_todo, delete_todo, list_todos, update_todo
-from typing import Any, Dict, List, Union
+from typing import List
 
 async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
     tools = [
@@ -56,7 +56,7 @@ async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
 
     llm_with_tools = llm.bind_tools(tools, tool_choice="auto")
 
-    llm_with_tools.with_config(callbacks=[NamingHandler()])
+    llm_with_tools.with_config(callbacks=[LogHandler("llm_with_tools")])
 
 
     system = """You are a To-Do List Management Agent. Your primary function
@@ -70,56 +70,20 @@ async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
         ]
     )
 
-    handler = NamingHandler()
-
-    chain = {"human_msg": RunnablePassthrough()} | few_shot_prompt | llm_with_tools
+    chain = {"human_msg": RunnablePassthrough()} | few_shot_prompt | LogHandler("llm_with_tools_chain")
 
     # https://python.langchain.com/v0.2/docs/how_to/callbacks_attach/
-    ai_msg = chain.with_config(callbacks=[handler]).invoke(human_msg)
+    ai_msg = chain.with_config(callbacks=[LogHandler("llm_with_tools 2")]).invoke(human_msg)
 
     msgs: List[BaseMessage] = [human_msg, ai_msg]
 
     for tool_call in ai_msg.tool_calls:
         selected_tool = tools_dictionary[tool_call["name"]]
-        tool_msg = selected_tool.with_config(callbacks=[handler]).invoke(tool_call)
+        tool_msg = selected_tool.with_config(callbacks=[LogHandler("selected_tool")]).invoke(tool_call)
         msgs.append(tool_msg)
 
-    result = llm_with_tools.with_config(callbacks=[handler]).invoke(msgs)
+    result = llm_with_tools.with_config(callbacks=[LogHandler("llm_with_tools 3")]).invoke(msgs)
 
     result.name = "YourLLMAssistant"
 
     return result
-
-
-# https://python.langchain.com/v0.1/docs/modules/callbacks/
-class NamingHandler(BaseCallbackHandler):
-    """Base callback handler that can be used to handle callbacks from langchain."""
-
-    def on_tool_start(
-        self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
-    ) -> Any:
-        """Run when tool starts running."""
-        print(f"\nTool started: {input_str}\n{serialized}\n{kwargs}\n")
-
-    def on_tool_end(self, output: Any, **kwargs: Any) -> Any:
-        """Run when tool ends running."""
-        print(f"\nTool end: {output}\n{kwargs}\n")
-
-    def on_tool_error(
-        self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
-    ) -> Any:
-        """Run when tool errors."""
-        print(f"\nTool error: {error}\n{kwargs}\n")
-
-
-# prompt = ChatPromptTemplate.from_messages(["Tell me a joke about {animal}"])
-
-# # To enable streaming, we pass in `streaming=True` to the ChatModel constructor
-# # Additionally, we pass in our custom handler as a list to the callbacks parameter
-# model = ChatAnthropic(
-#     model="claude-3-sonnet-20240229", streaming=True, callbacks=[MyCustomHandler()]
-# )
-
-# chain = prompt | model
-
-# response = chain.invoke({"animal": "bears"})
