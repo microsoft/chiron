@@ -10,7 +10,8 @@ Content-Type: application/json
         {
             "id": "00152b2c-e8a9-af5a-daad-d815255ddbdb",
             "role": "user",
-            "content": "I have a meeting with Morpheus at 2pm on the 22nd. I should learn kung fu by then. Please add the meeting to my Outlook calendar. What does my todo list look like?",
+            //"content": "I have a meeting with Morpheus at 2pm on the 22nd. I should learn kung fu by then. Please add the meeting to my Outlook calendar. What does my todo list look like?",
+            "content": "I need to find out how to set the date on my Waltham watch.",
             "date": "2024-08-15T17:45:57.307Z"
         }
     ]

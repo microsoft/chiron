@@ -10,6 +10,7 @@ config = AzureConfig()
 llm = AzureChatOpenAI(
     deployment_name=config.azure_openai_chat_deployment,
     openai_api_version=config.azure_openai_chat_api_version,
+    azure_endpoint=config.azure_endpoint
 )
 
 system_prompt = """You are a To-Do List Management Agent. Your primary function

@@ -6,6 +6,7 @@ from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from tools.outlook_tools import create_calendar_event, send_email
 from tools.todo_tools import complete_todo, create_todo, delete_todo, list_todos, update_todo
+from tools.retriever_tools import select_index  #, load_document
 from typing import Any, Dict, List, Union
 
 async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
@@ -17,6 +18,8 @@ async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
         update_todo,
         send_email,
         create_calendar_event,
+        select_index,
+        # load_document,
     ]
     tools_dictionary = {
         "create_todo": create_todo,
@@ -26,6 +29,8 @@ async def acall_llm_with_tools(llm: AzureChatOpenAI, human_msg: HumanMessage):
         "update_todo": update_todo,
         "send_email": send_email,
         "create_calendar_event": create_calendar_event,
+        "select_index": select_index,
+        # "load_document": load_document,
     }
 
     # few shot option

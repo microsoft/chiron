@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 from agents.outlook_agent import outlook_agent
 from agents.todo_agent import todo_agent
+from agents.retriever_agent import retriever_agent
 from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor
 from langchain_openai import AzureChatOpenAI
@@ -32,7 +33,7 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
         llm = AzureChatOpenAI(
             deployment_name=config.azure_openai_chat_deployment,
             openai_api_version=config.azure_openai_chat_api_version,
-            # azure_endpoint=config.azure_endpoint,
+            azure_endpoint=config.azure_endpoint,
             # todo: mi / env var
             # azure_ad_token_provider=credential.get_token
             # error:
@@ -50,9 +51,13 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
 
         langchain_messages: List[BaseMessage] = []
         openai_messages = []
+        
+        #remove this line
+        config.use_supervisor = True
 
         if config.use_supervisor:
             agents: Dict[str, AgentExecutor] = {
+                "RetrieverAgent": retriever_agent,
                 "OutlookAgent": outlook_agent,
                 "TodoAgent": todo_agent,
             }
@@ -60,11 +65,12 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
             supervisor = Supervisor(
                 config,
                 """You are a Supervisor LLM responsible for orchestrating interactions
-                between the user and two specialized agents: the Outlook Management Agent and
+                between the user and three specialized agents: the Retriever Agent, Outlook Management Agent and
                 the To-Do List Management Agent. Your primary function is to delegate
                 tasks to the appropriate agent based on the user’s requests and ensure
                 seamless coordination between the agents.""",
                 agents,
+                llm,
             )
 
             langchain_messages: List[BaseMessage] = await supervisor.arun(
