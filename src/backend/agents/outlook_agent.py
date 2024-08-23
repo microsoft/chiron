@@ -1,3 +1,4 @@
+from services.log_handler import LogHandler
 from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -35,6 +36,6 @@ tools = [send_email, create_calendar_event]
 
 agent = create_openai_tools_agent(llm, tools, prompt)
 
-outlook_agent = AgentExecutor(agent=agent, tools=tools)
+outlook_agent = AgentExecutor(agent=agent, tools=tools, callbacks=[LogHandler("outlook_agent_executor")])
 
 __all__ = [outlook_agent]

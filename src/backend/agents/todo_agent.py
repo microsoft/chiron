@@ -1,3 +1,4 @@
+from services.log_handler import LogHandler
 from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -31,6 +32,6 @@ tools = [create_todo, list_todos, complete_todo, delete_todo, update_todo]
 
 agent = create_openai_tools_agent(llm, tools, prompt)
 
-todo_agent = AgentExecutor(agent=agent, tools=tools)
+todo_agent = AgentExecutor(agent=agent, tools=tools, callbacks=[LogHandler("todo_agent_executor")])
 
 __all__ = [todo_agent]

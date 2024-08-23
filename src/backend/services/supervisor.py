@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict, List
 import functools
 import operator
+from services.log_handler import LogHandler
 from helper.azure_config import AzureConfig
 from langchain.agents import AgentExecutor
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
@@ -72,7 +73,7 @@ class Supervisor:
         ).partial(options=str(options), members=", ".join(members))
         supervisor_chain = (
             prompt
-            | llm.bind_functions(functions=[function_def], function_call="route")
+            | llm.bind_functions(functions=[function_def], function_call="route").with_config(callbacks=[LogHandler("Supervisor.__init__")])
             | JsonOutputFunctionsParser()
         )
 
@@ -101,7 +102,7 @@ class Supervisor:
         self.graph = workflow.compile()
 
     def __agent_node__(self, state, agent, name):
-        result = agent.invoke(state)
+        result = agent.invoke(state).with_config(callbacks=[LogHandler("__agent_node__")])
         return {"messages": [AIMessage(content=result["output"], name=name, id=str(uuid.uuid4()), date=str(datetime.now().isoformat()))]}
 
     def __should_continue__(self, state, config):
