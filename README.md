@@ -18,7 +18,7 @@
   - This could be fronted by an APIM gateway for additional security and management capabilities. 
 - **Backend**: 
 	- A [Python Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-python?tabs=get-started%2Casgi%2Capplication-level&pivots=python-mode-decorators) that processes requests from the front end and routes them to the Azure OpenAI service. This is hosted in an Azure Function App, with the option of storing history in a DB like Cosmos DB.
-  	- [Langchain](https://x.y.z/overview) - builds and orchestrates the agents, RAG pattern completion between the services, and API actions while managing chat history and other capabilities.
+  	- [Langchain](https://python.langchain.com/v0.2/docs/introduction/) - builds and orchestrates the agents, RAG pattern completion between the services, and API actions while managing chat history and other capabilities.
     - [Azure OpenAI Service](https://learn.microsoft.com/azure/search/search-what-is-azure-search) - provides the Large Language Models to generate responses and for vectorization when needed.
     - Various tools can provide connectivity to knowledge. These can include search indices or other custom-purpose APIs.
 
