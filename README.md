@@ -2,21 +2,20 @@
 
 ## Features
 - Front End Client:
-	- UNDER CONSTRUCTION
+	- Natural language chat UI and AI generative answers
 - Back End API:
-	- UNDER CONSTRUCTION
-- Document Preparation:
-	- UNDER CONSTRUCTION
+	- HTTP triggered function to process 
+  - Langchain powered agentic orchestration or direct tool calling (controllable by USE_SUPERVISOR environment variable)
 
 
 ## Application Architecture
 
-- **User Interface**:  The application's chat interface is a react/js web application. This interface is what accepts user messages and questions, routes request to the application backend, and displays generated responses.
-	- originally based on the sample front end found in [Sample Chat App with AOAI - GitHub](https://github.com/microsoft/sample-app-aoai-chatGPT) 
+- **User Interface**:  The application's chat interface is a react/js web application hosted as a [Static Web App](https://azure.microsoft.com/en-us/products/app-service/static). This interface is what accepts user messages and questions, routes request to the application backend, and displays generated responses.
+	- This was originally based on the sample front end found in [Sample Chat App with AOAI - GitHub](https://github.com/microsoft/sample-app-aoai-chatGPT) 
 - **Backend**: 
-	- UNDER CONSTRUCTION
-- **Document Preparation**: 
-	- UNDER CONSTRUCTION
+	- A [Python Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-python?tabs=get-started%2Casgi%2Capplication-level&pivots=python-mode-decorators) that processes requests from the front end and routes them to the Azure OpenAI service.
+  	- [Langchain](https://x.y.z/overview) - builds and orchestrates the agents, RAG pattern completion between the services, and API actions while managing chat history and other capabilities.
+    - [Azure OpenAI Service](https://learn.microsoft.com/azure/search/search-what-is-azure-search) - provides the Large Language Models to generate responses and for vectorization when needed.
 
 - **Basic Logical Flow**:
 
@@ -41,7 +40,8 @@ Pricing varies per region and usage, so it isn't possible to predict exact costs
 
 
 ## Deployment
-UNDER CONSTRUCTION: Support for `azd` for easy deployment of the complete application, will be covered in a future task.
+This project supports `azd` for easy deployment of the complete application, as defined in the main.bicep resources.  
+See [Deployment Instructions here](./infra/README.md).
 
 
 ## Running locally for Dev and Debug
@@ -73,6 +73,7 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_VERSION=""
 AZURE_OPENAI_API_DEPLOYMENT_NAME=""
 AZURE_OPENAI_API_KEY=""
+USE_SUPERVISOR="True"
 ```
 
 Within VS Code, press `F5` or `Run` > `Start Debugging`. This should open a terminal and when finished, should show logs similar to the following:
@@ -148,8 +149,6 @@ This should open a browser, pointing to https://localhost:4280 with a basic chat
 To stop the frontend, just kill the terminal that it is running in.
 
 
-# Other Considerations
-UNDER CONSTRUCTION
 
 
 # Contributing
