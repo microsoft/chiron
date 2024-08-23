@@ -13,27 +13,7 @@ services:
     project: ./src/frontend
     dist: dist
     language: ts
-    host: staticwebapp
-    hooks:
-      # Creates a temporary `.env.local` file for the build command. Vite will automatically use it during build.
-      # The expected/required values are mapped to the infrastructure outputs.
-      # .env.local is ignored by git, so it will not be committed if, for any reason, if deployment fails.
-      # see: https://vitejs.dev/guide/env-and-mode
-      # Note: Notice that dotenv must be a project dependency for this to work. See package.json.
-      prepackage:
-        windows:
-          shell: pwsh
-          run: 'set NODE_OPTIONS=--max_old_space_size=8192 && echo "VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=""$env:APPLICATIONINSIGHTS_CONNECTION_STRING""" >> .env.local'
-        posix:
-          shell: sh
-          run: 'export NODE_OPTIONS=--max_old_space_size=8192 && echo VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=\"$APPLICATIONINSIGHTS_CONNECTION_STRING\" >> .env.local'    
-      postdeploy:
-        windows:
-          shell: pwsh
-          run: 'rm .env.local'
-        posix:
-          shell: sh
-          run: 'rm .env.local'
+    host: staticwebapp    
   api:
     project: ./src/backend
     language: python

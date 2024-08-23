@@ -28,6 +28,7 @@ param openAIDeploymentName string = 'chat'
 param openAIModelName string = 'gpt-4o'
 param embeddingDeploymentName string = 'embedding'
 param embeddingModelName string = 'text-embedding-ada-002'
+param openAiVersion string = '2024-02-15-preview'
 
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
@@ -175,6 +176,8 @@ output BACKEND_URI string = api.outputs.SERVICE_API_URI
 // openai
 output AZURE_OPENAI_ENDPOINT string = openAi.outputs.endpoint
 output AZURE_OPENAI_API_DEPLOYMENT_NAME string = openAIDeploymentName
+output AZURE_OPENAI_API_VERSION string = openAiVersion
+output AZURE_OPENAI_API_KEY string = openAi.outputs.key
 output AZURE_OPENAI_MODEL_NAME string = openAIModelName
 output AZURE_OPENAI_EMBEDDING_NAME string = embeddingDeploymentName
 output USE_SUPERVISOR bool = useSupervisor

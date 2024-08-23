@@ -65,6 +65,7 @@ async def converse(req: func.HttpRequest) -> func.HttpResponse:
                 tasks to the appropriate agent based on the user’s requests and ensure
                 seamless coordination between the agents.""",
                 agents,
+                llm
             )
 
             langchain_messages: List[BaseMessage] = await supervisor.arun(
