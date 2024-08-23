@@ -102,7 +102,7 @@ class Supervisor:
         self.graph = workflow.compile()
 
     def __agent_node__(self, state, agent, name):
-        result = agent.invoke(state).with_config(callbacks=[LogHandler("__agent_node__")])
+        result = agent.invoke(state)
         return {"messages": [AIMessage(content=result["output"], name=name, id=str(uuid.uuid4()), date=str(datetime.now().isoformat()))]}
 
     def __should_continue__(self, state, config):
